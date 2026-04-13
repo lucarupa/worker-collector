@@ -7,10 +7,6 @@ from app.core.Enum import ExecutionTypeEnum
 from app.core.Enum.error_code import ErrorCodeEnum
 from app.adapter.implementations.api_implementations import ApiImplementations
 from app.adapter.interface import StrategyInterface
-from app.core.const import (
-    create_normalization,
-    create_operator,
-)
 from app.core.interface.config_interface import (
     ApiConfigInterface,
     ScrapperConfigInterface,

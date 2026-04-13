@@ -5,7 +5,7 @@ from aiokafka import AIOKafkaConsumer
 from app.adapter import CollectorAdapter
 from app.core.interface.start_collector_interface import StartCollector
 from app.exections.general_exception import GeneralException
-from app.services.kafka import TOPIC, KAFKA_BOOTSTRAP, logger
+from app.services.kafka import logger, environment_variables
 from app.services.kafka.producer import publish_bot_event
 
 _semaphore = asyncio.Semaphore(1)
@@ -27,12 +27,14 @@ async def run_and_publish(
 
 async def start_kafka_consumer(collector: CollectorAdapter):
     consumer = AIOKafkaConsumer(
-        TOPIC,
-        bootstrap_servers=KAFKA_BOOTSTRAP,
-        group_id="scrapper-group",
+        environment_variables.topic_consumer,
+        bootstrap_servers=environment_variables.bootstrap_servers,
+        group_id=environment_variables.group_id,
         auto_offset_reset="earliest",
     )
-    logger.info(f"[KAFKA CONSUMER] Connecting to {KAFKA_BOOTSTRAP}, topic: {TOPIC}")
+    logger.info(
+        f"[KAFKA CONSUMER] Connecting to {environment_variables.bootstrap_servers}, topic: {environment_variables.topic_consumer}"
+    )
     await consumer.start()
     logger.info(f"[KAFKA CONSUMER] Started. Waiting for messages...")
     try:
