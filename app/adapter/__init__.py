@@ -1,5 +1,7 @@
 from typing import Union
 
+from injector import Injector
+
 from app.adapter.implementations.scrapper_implementations import ScrapperImplementations
 from app.core.Enum import ExecutionTypeEnum
 from app.core.Enum.error_code import ErrorCodeEnum
@@ -21,7 +23,7 @@ from app.utils.logger import AppLogger
 
 
 class CollectorAdapter:
-    def __init__(self):
+    def __init__(self, injector: Injector):
         self.logger = AppLogger(__name__, "app.log").get_logger()
         self.is_executing = False
         self.execution_type = ExecutionTypeEnum.API
