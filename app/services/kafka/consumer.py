@@ -1,3 +1,4 @@
+import asyncio
 import json
 from aiokafka import AIOKafkaConsumer
 
@@ -5,6 +6,18 @@ from app.adapter import CollectorAdapter
 from app.core.interface.start_collector_interface import StartCollector
 from app.exections.general_exception import GeneralException
 from app.services.kafka import TOPIC, KAFKA_BOOTSTRAP, logger
+from app.services.kafka.producer import publish_bot_event
+
+_semaphore = asyncio.Semaphore(1)
+
+
+async def run_and_publish(
+    collector: CollectorAdapter, info: StartCollector, payload: dict
+):
+    async with _semaphore:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, collector.execute, info)
+        await publish_bot_event(payload)
 
 
 async def start_kafka_consumer(collector: CollectorAdapter):
@@ -25,12 +38,11 @@ async def start_kafka_consumer(collector: CollectorAdapter):
                     f"[KAFKA CONSUMER] Skipping message, missing collector header"
                 )
                 continue
-            logger.info(f"[KAFKA CONSUMER] Raw message received: {message}")
             payload = json.loads(message.value.decode())
             try:
                 info = StartCollector(**payload)
                 logger.info(f"[KAFKA CONSUMER] start: {info.slug} - {info.id}")
-                collector.execute(info)
+                asyncio.create_task(run_and_publish(collector, info, payload))
             except GeneralException as e:
                 logger.error(f"[KAFKA CONSUMER] GeneralException: {e}")
             except Exception as e:
