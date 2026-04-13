@@ -15,8 +15,12 @@ from app.core.interface.config_interface import (
     ApiConfigInterface,
     ScrapperConfigInterface,
 )
+from app.core.interface.normalization_interface import NormalizationInterface
+from app.core.interface.operator_interface import OperatorInterface
 from app.core.interface.start_collector_interface import StartCollector
 from app.core.repositories.api_config_repository import ApiConfigRepository
+from app.core.repositories.normalization_repository import NormalizationRepository
+from app.core.repositories.operator_repository import OperatorRepository
 from app.core.repositories.scrapper_config_repository import ScrapperConfigRepository
 from app.exections.general_exception import GeneralException
 from app.utils.logger import AppLogger
@@ -33,6 +37,8 @@ class CollectorAdapter:
     def _init_repository(self, injector: Injector):
         self.api_config_repository = injector.get(ApiConfigRepository)
         self.scrapper_config_repository = injector.get(ScrapperConfigRepository)
+        self.normalization_repository = injector.get(NormalizationRepository)
+        self.operator_repository = injector.get(OperatorRepository)
 
     def _init_strategy(self, info: StartCollector):
         try:
@@ -50,10 +56,20 @@ class CollectorAdapter:
                 )
             if config is None:
                 raise GeneralException("No config found", ErrorCodeEnum.NOT_FOUND_DATA)
+            normalization: NormalizationInterface | None = (
+                self.normalization_repository.get_config(
+                    report=info.reportType, slug=info.slug
+                )
+            )
+            operator: OperatorInterface | None = self.operator_repository.get_config(
+                report=info.reportType, slug=info.slug
+            )
+            if normalization is None or operator is None:
+                raise GeneralException("No config found", ErrorCodeEnum.NOT_FOUND_DATA)
             strategy = StrategyInterface(
                 config=config,
-                normalization=create_normalization(),
-                operator=create_operator(),
+                normalization=normalization,
+                operator=operator,
             )
             if self.execution_type == ExecutionTypeEnum.API:
                 self.strategy = ApiImplementations(strategy)
