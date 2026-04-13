@@ -1,7 +1,7 @@
 import os.path
 from typing import List
 
-from app.adapter import StrategyInterface
+from app.adapter.interface import StrategyInterface
 from app.adapter.model import StrategyModel
 from app.core.const import FOLDER_SAVE_PATH
 from app.core.interface.config_interface import ApiConfigInterface

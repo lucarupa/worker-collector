@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Generic, TypeVar, List
 
 from app.core.Enum.error_code import ErrorCodeEnum
-from app.adapter import StrategyInterface
+from app.adapter.interface import StrategyInterface
 from app.core.interface.normalization_interface import NormalizationInterface
 from app.core.interface.operator_interface import OperatorInterface
 from app.core.interface.start_collector_interface import StartCollector
