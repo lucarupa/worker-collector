@@ -14,7 +14,7 @@ T = TypeVar("T")
 
 class StrategyModel(ABC, Generic[T]):
     def __init__(self, data: StrategyInterface):
-        self.logger = AppLogger(__name__, "app.log")
+        self.logger = AppLogger(__name__, "app.log").get_logger()
         self.config: T = data.Config
         self.operator: OperatorInterface = data.operator
         self.normalization: NormalizationInterface = data.normalization
@@ -38,6 +38,7 @@ class StrategyModel(ABC, Generic[T]):
 
     def execute(self, data: StartCollector):
         try:
+            self.logger.info("estar collector")
             self.path_list = self._run_processor(data)
             if self.path_list and len(self.path_list) > 0:
                 self._run_normalization()
