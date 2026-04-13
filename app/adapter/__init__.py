@@ -67,7 +67,7 @@ class CollectorAdapter:
             self.execution_type = info.executeBy
             self._init_strategy()
             if self.strategy is not None:
-                self.strategy.execute()
+                self.strategy.execute(info)
         except GeneralException as e:
             raise e
         finally:
