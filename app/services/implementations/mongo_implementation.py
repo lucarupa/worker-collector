@@ -28,7 +28,7 @@ class MongoDB(Database):
     def query(self, collection: str, query: dict) -> List[T]:
         connet = self.db[collection]
         results = connet.find(query)
-        return results
+        return list(results)
 
     def save(self, collection: str, data: T):
         connet = self.db[collection]

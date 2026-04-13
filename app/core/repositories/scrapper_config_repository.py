@@ -19,7 +19,7 @@ class ScrapperConfigRepository:
         self, slug: str, report: ReportTypeEnum
     ) -> Optional[ScrapperConfigInterface]:
         query = {
-            "slug": {"$in": slug},
+            "slug": slug,
             "report": report.value,
         }
         result: List[Dict] = self.db.query("scrapper_config", query)

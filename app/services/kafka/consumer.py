@@ -11,6 +11,11 @@ from app.services.kafka.producer import publish_bot_event
 _semaphore = asyncio.Semaphore(1)
 
 
+def handle_task_exception(task: asyncio.Task):
+    if not task.cancelled() and task.exception():
+        pass
+
+
 async def run_and_publish(
     collector: CollectorAdapter, info: StartCollector, payload: dict
 ):
@@ -42,7 +47,8 @@ async def start_kafka_consumer(collector: CollectorAdapter):
             try:
                 info = StartCollector(**payload)
                 logger.info(f"[KAFKA CONSUMER] start: {info.slug} - {info.id}")
-                asyncio.create_task(run_and_publish(collector, info, payload))
+                task = asyncio.create_task(run_and_publish(collector, info, payload))
+                task.add_done_callback(handle_task_exception)  # ← aquí
             except GeneralException as e:
                 logger.error(f"[KAFKA CONSUMER] GeneralException: {e}")
             except Exception as e:

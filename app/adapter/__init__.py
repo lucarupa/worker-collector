@@ -8,8 +8,6 @@ from app.core.Enum.error_code import ErrorCodeEnum
 from app.adapter.implementations.api_implementations import ApiImplementations
 from app.adapter.interface import StrategyInterface
 from app.core.const import (
-    create_api_config,
-    create_scrapper_config,
     create_normalization,
     create_operator,
 )
@@ -18,6 +16,8 @@ from app.core.interface.config_interface import (
     ScrapperConfigInterface,
 )
 from app.core.interface.start_collector_interface import StartCollector
+from app.core.repositories.api_config_repository import ApiConfigRepository
+from app.core.repositories.scrapper_config_repository import ScrapperConfigRepository
 from app.exections.general_exception import GeneralException
 from app.utils.logger import AppLogger
 
@@ -28,17 +28,28 @@ class CollectorAdapter:
         self.is_executing = False
         self.execution_type = ExecutionTypeEnum.API
         self.strategy: Union[None, ApiImplementations, ScrapperImplementations] = None
-        self._init_repository()
+        self._init_repository(injector)
 
-    def _init_repository(self):
-        pass
+    def _init_repository(self, injector: Injector):
+        self.api_config_repository = injector.get(ApiConfigRepository)
+        self.scrapper_config_repository = injector.get(ScrapperConfigRepository)
 
-    def _init_strategy(self):
+    def _init_strategy(self, info: StartCollector):
         try:
             if self.execution_type == ExecutionTypeEnum.API:
-                config: ApiConfigInterface = create_api_config()
+                config: ApiConfigInterface | None = (
+                    self.api_config_repository.get_config(
+                        report=info.reportType, slug=info.slug
+                    )
+                )
             else:
-                config: ScrapperConfigInterface = create_scrapper_config()
+                config: ScrapperConfigInterface | None = (
+                    self.scrapper_config_repository.get_config(
+                        slug=info.slug, report=info.reportType
+                    )
+                )
+            if config is None:
+                raise GeneralException("No config found", ErrorCodeEnum.NOT_FOUND_DATA)
             strategy = StrategyInterface(
                 config=config,
                 normalization=create_normalization(),
@@ -67,7 +78,7 @@ class CollectorAdapter:
         try:
             self.is_executing = True
             self.execution_type = info.executeBy
-            self._init_strategy()
+            self._init_strategy(info)
             if self.strategy is not None:
                 self.strategy.execute(info)
         except GeneralException as e:
