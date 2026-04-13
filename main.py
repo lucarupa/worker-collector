@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.core.adapter import CollectorAdapter
+from app.adapter import CollectorAdapter
 from app.routes import create_router
 
 

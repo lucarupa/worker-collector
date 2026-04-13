@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from app.core.Enum.error_code import ErrorCodeEnum
-from app.core.adapter import CollectorAdapter
-from app.core.interface.start_collector import StartCollector
+from app.adapter import CollectorAdapter
+from app.core.interface.start_collector_interface import StartCollector
 from app.exections.general_exception import GeneralException
 
 router = APIRouter()
@@ -35,7 +35,12 @@ def create_router(collector: CollectorAdapter):
                 "message": e.message,
                 "success": False,
             }
-            raise HTTPException(status_code=500, detail=response)
+            if e.error_code == ErrorCodeEnum.NOT_FOUND_DATA:
+                status_code = 404
+            else:
+                status_code = 500
+            response["message"] = str(e)
+            raise HTTPException(status_code=status_code, detail=response)
         except Exception as e:
             response = {
                 "execution_id": info.id,
