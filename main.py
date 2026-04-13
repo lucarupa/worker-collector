@@ -10,6 +10,7 @@ from app.core.env.mongo_env import MongoEnv
 from app.routes import create_router
 from app.services.database_injection import DatabaseModule
 from app.services.kafka.consumer import start_kafka_consumer
+from app.services.repositories_injection import RepositoriesModule
 
 load_dotenv()
 
@@ -22,7 +23,8 @@ def create_app() -> FastAPI:
             DatabaseModule(
                 connection_string=mongo_env.connection_string,
                 database=mongo_env.database,
-            )
+            ),
+            RepositoriesModule(),
         ]
     )
 
