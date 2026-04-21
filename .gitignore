@@ -123,3 +123,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.claude/worktrees/beautiful-benz-466d1c
