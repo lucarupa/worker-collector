@@ -1,8 +1,10 @@
 import gc
 from abc import ABC, abstractmethod
+from unittest import result
 
 from app.core.Enum import ReportTypeEnum
 from app.core.api.interface import StartApiCollector
+from app.core.interface.config_interface import ApiConfigInterface
 from app.core.interface.http_interface import HttpsTypeEnum
 from app.exections.general_exception import GeneralException
 from app.services.implementations.http_implementations import HttpImplementations
@@ -54,19 +56,46 @@ class ApisAffiliationStrategyBase(ABC):
 
     def get_credentials(
         self,
-        info_collector: StartApiCollector,
+        info_collector: ApiConfigInterface,
         report_type: ReportTypeEnum,
         token: dict,
+        start_date: str,
+        end_date: str,
     ) -> tuple[str, dict]:
-        url_base = info_collector.properties.base.url
-        propert = info_collector.properties
+        url_base = info_collector.base.url
         if report_type == ReportTypeEnum.MEMBER:
-            endpoint = f"{propert.member.endpoint}&{propert.member.query}&"
+            endpoint = (
+                f"{info_collector.member.endpoint}&{info_collector.member.query}&"
+            )
         else:
-            endpoint = f"{propert.account.endpoint}&{propert.account.query}&"
+            endpoint = (
+                f"{info_collector.account.endpoint}&{info_collector.account.query}&"
+            )
         headers = self.get_headers(token)
-        url = f"{url_base}/{endpoint}d1={info_collector.from_date}&d2={info_collector.to_date}&{propert.base.query}"
+        url = f"{url_base}/{endpoint}d1={start_date}&d2={end_date}&{info_collector.base.query}"
         return url, headers
+
+    def download_report(
+        self,
+        url: str,
+        slug: str,
+        headers: dict = None,
+        report_type: HttpsTypeEnum = None,
+    ) -> tuple[bool, str]:
+        try:
+            result_report = self.http_service.get(
+                base_url=url, headers=headers, response_type=report_type
+            )
+            file_name_origin = f"{slug}_report.csv"
+            folder_download = self.utils_file.find_folder_download()
+            file_name = f"{folder_download}/{file_name_origin}"
+            if result_report.content:
+                with open(file_name, "wb") as file:
+                    file.write(result_report.content)
+                    return True, file_name
+            return False, file_name
+        except GeneralException as error:
+            raise error
 
     @abstractmethod
     def execute_member(
