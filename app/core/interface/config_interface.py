@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from app.core.Enum import ReportTypeEnum
+from app.core.interface.normalization_interface import RenameColumnsInterface
 
 
 class Config(BaseModel):
@@ -25,7 +26,34 @@ class ScrapperConfigInterface(Config):
     url_account: str
 
 
+class AuthConfigInterface:
+    url: str
+    client_id: str
+    client_secret: str
+    scope: str
+    grant_type: str
+
+
+class BaseConfigInterface:
+    url: str
+    query: str
+    header: dict[str, str]
+
+
+class GroupConfigInterface:
+    names: list[str]
+    select: list[str]
+    renames: list[RenameColumnsInterface]
+
+
+class ConfigReportInterface:
+    endpoint: str
+    query: str
+    group: list[GroupConfigInterface]
+
+
 class ApiConfigInterface(Config):
-    base: str
-    member: str
-    account: str
+    auth: AuthConfigInterface
+    base: BaseConfigInterface
+    member: ConfigReportInterface
+    account: ConfigReportInterface
