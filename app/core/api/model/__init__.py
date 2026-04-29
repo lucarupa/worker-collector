@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from unittest import result
 
 from app.core.Enum import ReportTypeEnum
+from app.core.Enum.error_code import ErrorCodeEnum
 from app.core.api.interface import StartApiCollector
 from app.core.interface.config_interface import ApiConfigInterface
 from app.core.interface.http_interface import HttpsTypeEnum
@@ -86,16 +87,21 @@ class ApisAffiliationStrategyBase(ABC):
             result_report = self.http_service.get(
                 base_url=url, headers=headers, response_type=report_type
             )
+            find_data = False
             file_name_origin = f"{slug}_report.csv"
             folder_download = self.utils_file.find_folder_download()
             file_name = f"{folder_download}/{file_name_origin}"
             if result_report.content:
                 with open(file_name, "wb") as file:
                     file.write(result_report.content)
-                    return True, file_name
-            return False, file_name
+                find_data = True
+            return find_data, file_name
         except GeneralException as error:
             raise error
+        except Exception as error:
+            message = "Error writing to document"
+            self.logger.error(error)
+            raise GeneralException(message, ErrorCodeEnum.INTERNAL_ERROR_SITE)
 
     @abstractmethod
     def execute_member(
