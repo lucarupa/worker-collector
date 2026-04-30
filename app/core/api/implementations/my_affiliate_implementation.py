@@ -14,9 +14,8 @@ class MyAffiliateImplementation(ApisAffiliationStrategyBase):
         self.logger = AppLogger(__name__, "app.log").get_logger()
 
     def execute_member(self, token: dict, info_collector: StartApiCollector) -> str:
-        path_file = ""
         self.logger.info(
-            f"Starting execution of {info_collector.properties.slug} for dates {info_collector.from_date} - {info_collector.to_date}"
+            f"Starting execution of {info_collector.properties.slug} for dates {info_collector.from_date} - {info_collector.to_date} - Member"
         )
         try:
             url, headers = self.get_credentials(
@@ -39,11 +38,15 @@ class MyAffiliateImplementation(ApisAffiliationStrategyBase):
                     report_type=ReportTypeEnum.MEMBER,
                     file_path=file,
                 )
+                return path_file
             else:
                 raise GeneralException("Not found data", ErrorCodeEnum.NOT_FOUND_DATA)
-            return path_file
         except GeneralException as err:
             raise err
 
     def execute_account(self, token: dict, info_collector: StartApiCollector) -> str:
-        pass
+        self.logger.info(
+            f"Starting execution of {info_collector.properties.slug} for dates {info_collector.from_date} - {info_collector.to_date} - Account"
+        )
+        path_file = ""
+        return path_file

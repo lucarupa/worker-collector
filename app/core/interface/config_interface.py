@@ -26,7 +26,7 @@ class ScrapperConfigInterface(Config):
     url_account: str
 
 
-class AuthConfigInterface:
+class AuthConfigInterface(BaseModel):
     url: str
     client_id: str
     client_secret: str
@@ -34,19 +34,19 @@ class AuthConfigInterface:
     grant_type: str
 
 
-class BaseConfigInterface:
+class BaseConfigInterface(BaseModel):
     url: str
     query: str
     header: dict[str, str]
 
 
-class GroupConfigInterface:
+class GroupConfigInterface(BaseModel):
     names: list[str]
     select: list[str]
     renames: list[RenameColumnsInterface]
 
 
-class ConfigReportInterface:
+class ConfigReportInterface(BaseModel):
     endpoint: str
     query: str
     group: list[GroupConfigInterface]
